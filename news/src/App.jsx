@@ -40,9 +40,9 @@ function App() {
 
   return (
     <main className="min-h-screen bg-[#faf7f2] text-black font-serif p-4 md:p-8 lg:p-12 relative">
-      {/* Torn top edge for realism on the background card */}
+      {/* Torn top edge for realism, outside the main card */}
       <img src="/torn-top.png" alt="torn edge" style={{position:'absolute', top:0, left:0, width:'100%', zIndex:3, pointerEvents:'none'}} />
-      <div className="max-w-4xl mx-auto shadow-xl border border-gray-300 rounded-lg p-8 sm:p-12 newspaper-paper relative overflow-hidden" style={{background:'rgba(220,220,220,0.45)'}}>
+      <div className="w-full shadow-xl border border-gray-300 rounded-lg p-8 sm:p-12 newspaper-paper relative overflow-hidden" style={{background:'rgba(220,220,220,0.45)'}}>
         {/* Dog-ear crease for realism */}
         <div className="dog-ear-crease"></div>
         {/* Watermark */}
