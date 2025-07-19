@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence, useAnimationFrame } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
 
 // Mock data structure
@@ -37,58 +37,63 @@ function App() {
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
   return (
-    <main className="min-h-screen bg-[#faf7f2] text-black font-serif p-4 relative">
-      <div className="max-w-3xl mx-auto shadow-xl border border-gray-300 bg-white rounded-lg p-6 newspaper-paper relative overflow-hidden">
-        {/* Dog-ear crease for realism */}
-        <div className="dog-ear-crease"></div>
-        {/* Watermark */}
-        <div className="newspaper-watermark">NEWS</div>
-        {/* Masthead */}
-        <div className="border-b-4 border-black pb-2 mb-2 text-center newspaper-masthead relative z-10">
-          <span className="newspaper-crest">EST. 2024</span>
-          <h1 className="text-5xl font-extrabold tracking-wide uppercase newspaper-masthead">THE VERACITY TIMES</h1>
-          <div className="newspaper-edition">Published: {today} &nbsp; | &nbsp; Edition No. 1</div>
-          <p className="italic text-lg text-gray-700 mt-1 font-serif">Your trusted source for news analysis</p>
-        </div>
-        {/* Header */}
-        <motion.header 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-10 relative z-10"
-        >
-          <h2 className="section-heading mb-2">News Veracity Detector</h2>
-          <p className="text-gray-600 mt-2 font-serif">
-            Your AI co-pilot for navigating the complex world of online news
-          </p>
-        </motion.header>
-        {/* Input Section */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-10 relative z-10"
-        >
-          <div className="flex gap-4">
-            <input
-              type="url"
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              placeholder="Paste a news article URL..."
-              className="input-field border border-gray-400 bg-[#f5f5f5] text-black font-serif"
-            />
-            <button
-              onClick={handleAnalyze}
-              disabled={isLoading || !urlInput}
-              className="button-primary bg-black text-white font-serif border border-gray-700 hover:bg-gray-800"
-            >
-              {isLoading ? 'Analyzing...' : 'Analyze'}
-            </button>
+    <main className="min-h-screen bg-[#faf7f2] text-black font-serif p-4 md:p-8 lg:p-12 relative">
+      <div className="paper-bg-card relative max-w-5xl mx-auto px-2 sm:px-4 md:px-8">
+        {/* Torn top edge for realism on the background card */}
+        <img src="/torn-top.png" alt="torn edge" style={{position:'absolute', top:0, left:0, width:'100%', zIndex:3, pointerEvents:'none'}} />
+        <div className="max-w-3xl mx-auto shadow-xl border border-gray-300 bg-white rounded-lg p-4 sm:p-6 md:p-8 newspaper-paper relative overflow-hidden">
+          {/* Dog-ear crease for realism */}
+          <div className="dog-ear-crease"></div>
+          {/* Watermark */}
+          <div className="newspaper-watermark">NEWS</div>
+          {/* Masthead */}
+          <div className="border-b-4 border-black pb-2 mb-2 text-center newspaper-masthead relative z-10 flex flex-col items-center">
+            <span className="newspaper-crest">EST. 2024</span>
+            <h1 className="text-5xl font-extrabold tracking-wide uppercase newspaper-masthead">THE VERACITY TIMES</h1>
+            <div className="newspaper-edition">Published: {today} | Edition No. 1</div>
+            <p className="italic text-lg text-gray-700 mt-1 font-serif">Your trusted source for news analysis</p>
           </div>
-        </motion.div>
-        {/* Results Section */}
-        <AnimatePresence>
-          {isLoading && <LoadingSpinner />}
-          {results && <ResultsDisplay data={results} />}
-        </AnimatePresence>
+          {/* Header */}
+          <motion.header 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-10 relative z-10"
+          >
+            <h2 className="section-heading mb-2">News Veracity Detector</h2>
+            <p className="text-gray-600 mt-2 font-serif">
+              Your AI co-pilot for navigating the complex world of online news
+            </p>
+          </motion.header>
+          {/* Input Section */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-10 relative z-10"
+          >
+            <div className="flex gap-4">
+              <input
+                type="url"
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                placeholder="Paste a news article URL..."
+                className="input-field border border-gray-400 bg-[#f5f5f5] text-black font-serif"
+              />
+              <button
+                onClick={handleAnalyze}
+                disabled={isLoading || !urlInput}
+                className="button-primary bg-black text-white font-serif border border-gray-700 hover:bg-gray-800"
+              >
+                {isLoading ? 'Analyzing...' : 'Analyze'}
+              </button>
+            </div>
+          </motion.div>
+          {/* Results Section */}
+          <AnimatePresence>
+            {isLoading || results ? (
+              <ResultsDisplay data={results} isLoading={isLoading} />
+            ) : null}
+          </AnimatePresence>
+        </div>
       </div>
     </main>
   );
@@ -106,29 +111,36 @@ const LoadingSpinner = () => (
   </motion.div>
 );
 
-const ResultsDisplay = ({ data }) => {
-  const scoreColor = data.credibilityScore > 70 ? '#4ade80' : 
-                     data.credibilityScore > 40 ? '#facc15' : '#f87171';
+const ResultsDisplay = ({ data, isLoading }) => {
+  const scoreColor = data?.credibilityScore > 70 ? '#4ade80' : 
+                     data?.credibilityScore > 40 ? '#facc15' : '#f87171';
   // Removed isBreaking and BREAKING NEWS badge
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white border-2 border-gray-400 rounded-xl p-8 shadow-lg font-serif relative z-10"
+      className="bg-white border-2 border-gray-400 rounded-xl p-4 sm:p-8 shadow-lg font-serif relative z-10 min-h-[420px] flex flex-col justify-center"
     >
-      <div className="grid md:grid-cols-3 gap-8 mb-8">
-        <ScoreCircle score={data.credibilityScore} color={scoreColor} />
-        <div className="md:col-span-2 space-y-6">
-          <AnalysisMetrics 
-            reliability={data.analysis.source.reliability}
-            tone={data.analysis.sentiment.tone}
-          />
-          <KeywordList keywords={data.analysis.extractedKeywords} />
-        </div>
+      <div className="w-full flex flex-col items-center justify-center min-h-[420px]">
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : (
+          <>
+            <div className="results-columns mb-8">
+              <ScoreCircle score={data.credibilityScore} color={scoreColor} />
+              <div className="md:col-span-2 space-y-6">
+                <AnalysisMetrics 
+                  reliability={data.analysis.source.reliability}
+                  tone={data.analysis.sentiment.tone}
+                />
+                <KeywordList keywords={data.analysis.extractedKeywords} />
+              </div>
+            </div>
+            <CorroborationList facts={data.supportingFacts} />
+          </>
+        )}
       </div>
-      <hr className="border-t-2 border-dotted border-gray-300 my-6" />
-      <CorroborationList facts={data.supportingFacts} />
     </motion.div>
   );
 };
@@ -152,7 +164,7 @@ const ScoreCircle = ({ score, color }) => {
   const circumference = 2 * Math.PI * 45;
   const progress = displayScore / 100;
   return (
-    <div className="relative h-48 w-48 mx-auto">
+    <div className="relative h-40 w-40 mx-auto">
       <svg className="transform -rotate-90" viewBox="0 0 100 100">
         <circle cx="50" cy="50" r="45" fill="none" stroke="#374151" strokeWidth="10"/>
         <motion.circle

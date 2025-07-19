@@ -68,13 +68,17 @@ body::before {
   position: relative;
   background: rgba(255,255,255,0.85); /* Less transparent for better readability */
   border-radius: 18px 18px 40px 40px/18px 18px 60px 60px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.16), 0 1.5px 0 #e2e2e2;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.16), 0 1.5px 0 #e2e2e2, 0 0 0 12px rgba(0,0,0,0.04);
   border: 2.5px solid #d1bfa3;
   margin-bottom: 2rem;
   overflow: hidden;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.16), 0 1.5px 0 #e2e2e2, inset 0 0 60px 0 rgba(0,0,0,0.10);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.16), 0 1.5px 0 #e2e2e2, inset 0 0 60px 0 rgba(0,0,0,0.10), 0 0 60px 0 rgba(0,0,0,0.08);
+  /* Torn edge effect at the bottom */
+  mask-image: url('/torn-edge.png');
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
 }
 .newspaper-paper::after {
   content: '';
@@ -198,4 +202,33 @@ body::before {
 
 .section-heading, .text-2xl, .font-extrabold {
   font-family: 'Playfair Display', Georgia, 'Times New Roman', Times, serif;
+}
+
+@media (min-width: 900px) {
+  .results-columns {
+    display: flex;
+    gap: 2rem;
+  }
+  .results-columns > * {
+    flex: 1 1 0;
+  }
+}
+
+.dotted-divider {
+  border-top: 2px dotted #b8a77a;
+  margin: 2rem 0;
+}
+.dashed-divider {
+  border-top: 2px dashed #b8a77a;
+  margin: 2rem 0;
+}
+
+.paper-bg-card {
+  background: #faf7f2 url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+  background-repeat: repeat;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+  padding-top: 32px;
+  padding-bottom: 32px;
+  position: relative;
 }
