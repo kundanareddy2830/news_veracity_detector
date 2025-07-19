@@ -1,0 +1,9 @@
+# Core library for intelligent web crawling and content extraction
+
+crawl4ai==0.7.1
+
+# Asynchronous HTTP client for making API calls to Together AI and Google
+httpx
+
+# Utility to load environment variables (like API keys) from the .env file
+python-dotenv
