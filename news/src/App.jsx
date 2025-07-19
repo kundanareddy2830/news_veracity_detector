@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useAnimationFrame } from 'framer-motion';
 import './App.css';
 
 // Mock data structure
@@ -33,21 +33,30 @@ function App() {
     }, 2500);
   };
 
+  // Get today's date for edition line
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
   return (
-    <main className="min-h-screen bg-[#faf7f2] text-black font-serif p-4">
-      <div className="max-w-3xl mx-auto shadow-xl border border-gray-300 bg-white rounded-lg p-6 newspaper-paper">
+    <main className="min-h-screen bg-[#faf7f2] text-black font-serif p-4 relative">
+      <div className="max-w-3xl mx-auto shadow-xl border border-gray-300 bg-white rounded-lg p-6 newspaper-paper relative overflow-hidden">
+        {/* Dog-ear crease for realism */}
+        <div className="dog-ear-crease"></div>
+        {/* Watermark */}
+        <div className="newspaper-watermark">NEWS</div>
         {/* Masthead */}
-        <div className="border-b-4 border-black pb-2 mb-8 text-center">
-          <h1 className="text-5xl font-extrabold tracking-wide uppercase font-serif">The Veracity Times</h1>
+        <div className="border-b-4 border-black pb-2 mb-2 text-center newspaper-masthead relative z-10">
+          <span className="newspaper-crest">EST. 2024</span>
+          <h1 className="text-5xl font-extrabold tracking-wide uppercase newspaper-masthead">THE VERACITY TIMES</h1>
+          <div className="newspaper-edition">Published: {today} &nbsp; | &nbsp; Edition No. 1</div>
           <p className="italic text-lg text-gray-700 mt-1 font-serif">Your trusted source for news analysis</p>
         </div>
         {/* Header */}
         <motion.header 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-10"
+          className="text-center mb-10 relative z-10"
         >
-          <h2 className="text-3xl md:text-4xl font-bold font-serif mb-2">News Veracity Detector</h2>
+          <h2 className="section-heading mb-2">News Veracity Detector</h2>
           <p className="text-gray-600 mt-2 font-serif">
             Your AI co-pilot for navigating the complex world of online news
           </p>
@@ -56,7 +65,7 @@ function App() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-10"
+          className="mb-10 relative z-10"
         >
           <div className="flex gap-4">
             <input
@@ -100,12 +109,13 @@ const LoadingSpinner = () => (
 const ResultsDisplay = ({ data }) => {
   const scoreColor = data.credibilityScore > 70 ? '#4ade80' : 
                      data.credibilityScore > 40 ? '#facc15' : '#f87171';
+  // Removed isBreaking and BREAKING NEWS badge
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white border-2 border-gray-400 rounded-xl p-8 shadow-lg font-serif"
+      className="bg-white border-2 border-gray-400 rounded-xl p-8 shadow-lg font-serif relative z-10"
     >
       <div className="grid md:grid-cols-3 gap-8 mb-8">
         <ScoreCircle score={data.credibilityScore} color={scoreColor} />
@@ -117,36 +127,56 @@ const ResultsDisplay = ({ data }) => {
           <KeywordList keywords={data.analysis.extractedKeywords} />
         </div>
       </div>
-      <hr className="border-t-2 border-gray-300 my-6" />
+      <hr className="border-t-2 border-dotted border-gray-300 my-6" />
       <CorroborationList facts={data.supportingFacts} />
     </motion.div>
   );
 };
 
-const ScoreCircle = ({ score, color }) => (
-  <div className="relative h-48 w-48 mx-auto">
-    <svg className="transform -rotate-90" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="45" fill="none" stroke="#374151" strokeWidth="10"/>
-      <motion.circle
-        cx="50"
-        cy="50"
-        r="45"
-        fill="none"
-        stroke={color}
-        strokeWidth="10"
-        strokeLinecap="round"
-        strokeDasharray={2 * Math.PI * 45}
-        initial={{ strokeDashoffset: 2 * Math.PI * 45 }}
-        animate={{ strokeDashoffset: 2 * Math.PI * 45 * (1 - score / 100) }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
-      />
-    </svg>
-    <div className="absolute inset-0 flex items-center justify-center">
-      <span className="text-4xl font-bold" style={{ color }}>{score}</span>
-      <span className="text-xl" style={{ color }}>%</span>
+const ScoreCircle = ({ score, color }) => {
+  // Animate the score number
+  const [displayScore, setDisplayScore] = useState(0);
+  React.useEffect(() => {
+    let start = 0;
+    const duration = 1200;
+    const startTime = performance.now();
+    function animate(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      setDisplayScore(Math.floor(progress * score));
+      if (progress < 1) requestAnimationFrame(animate);
+      else setDisplayScore(score);
+    }
+    animate(startTime);
+  }, [score]);
+  const circumference = 2 * Math.PI * 45;
+  const progress = displayScore / 100;
+  return (
+    <div className="relative h-48 w-48 mx-auto">
+      <svg className="transform -rotate-90" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="none" stroke="#374151" strokeWidth="10"/>
+        <motion.circle
+          cx="50"
+          cy="50"
+          r="45"
+          fill="none"
+          stroke={color}
+          strokeWidth="10"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference * (1 - progress)}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: circumference * (1 - progress) }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-4xl font-bold" style={{ color }}>{displayScore}</span>
+        <span className="text-xl" style={{ color }}>%</span>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const AnalysisMetrics = ({ reliability, tone }) => (
   <div className="grid grid-cols-2 gap-4 bg-gray-100 rounded-lg p-4 border border-gray-300">
@@ -179,12 +209,12 @@ const KeywordList = ({ keywords }) => (
 
 const CorroborationList = ({ facts }) => (
   <div className="pt-2">
-    <h3 className="text-2xl font-extrabold mb-4 font-serif border-b border-gray-300 pb-2">Corroboration Network</h3>
+    <h3 className="section-heading mb-4 border-b border-gray-300 pb-2">Corroboration Network</h3>
     <motion.div
       initial="hidden"
       animate="visible"
       variants={{
-        visible: { transition: { staggerChildren: 0.1 } }
+        visible: { transition: { staggerChildren: 0.13 } }
       }}
     >
       {facts.map((fact, index) => (
@@ -194,7 +224,10 @@ const CorroborationList = ({ facts }) => (
             hidden: { opacity: 0, x: -20 },
             visible: { opacity: 1, x: 0 }
           }}
-          className="bg-white border border-gray-300 p-4 rounded-lg mb-4 shadow-sm font-serif text-left hover:shadow-md transition"
+          initial="hidden"
+          animate="visible"
+          transition={{ duration: 0.5, delay: 0.13 * index }}
+          className="bg-white border border-gray-300 p-4 rounded-lg mb-4 shadow-sm font-serif text-left hover:shadow-md transition card-hover"
         >
           <a href={fact.url} target="_blank" rel="noopener noreferrer">
             <h4 className="font-bold text-blue-800 text-lg mb-1 font-serif hover:underline">{fact.title}</h4>
