@@ -40,16 +40,15 @@ function App() {
 
   return (
     <main className="min-h-screen bg-[#faf7f2] text-black font-serif p-4 md:p-8 lg:p-12 relative">
-      <div className="paper-bg-card relative max-w-5xl mx-auto px-2 sm:px-4 md:px-8">
-        {/* Torn top edge for realism on the background card */}
-        <img src="/torn-top.png" alt="torn edge" style={{position:'absolute', top:0, left:0, width:'100%', zIndex:3, pointerEvents:'none'}} />
-        <div className="max-w-3xl mx-auto shadow-xl border border-gray-300 bg-white rounded-lg p-4 sm:p-6 md:p-8 newspaper-paper relative overflow-hidden">
-          {/* Dog-ear crease for realism */}
-          <div className="dog-ear-crease"></div>
-          {/* Watermark */}
-          <div className="newspaper-watermark">NEWS</div>
-          {/* Masthead */}
-          <div className="border-b-4 border-black pb-2 mb-2 text-center newspaper-masthead relative z-10 flex flex-col items-center">
+      {/* Torn top edge for realism on the background card */}
+      <img src="/torn-top.png" alt="torn edge" style={{position:'absolute', top:0, left:0, width:'100%', zIndex:3, pointerEvents:'none'}} />
+      <div className="max-w-4xl mx-auto shadow-xl border border-gray-300 rounded-lg p-8 sm:p-12 newspaper-paper relative overflow-hidden" style={{background:'rgba(220,220,220,0.45)'}}>
+        {/* Dog-ear crease for realism */}
+        <div className="dog-ear-crease"></div>
+        {/* Watermark */}
+        <div className="newspaper-watermark">NEWS</div>
+        {/* Masthead */}
+        <div className="border-b-4 border-black pb-2 mb-2 text-center newspaper-masthead relative z-10 flex flex-col items-center">
             <span className="newspaper-crest">EST. 2024</span>
             <h1 className="text-5xl font-extrabold tracking-wide uppercase newspaper-masthead">THE VERACITY TIMES</h1>
             <div className="newspaper-edition">Published: {today} | Edition No. 1</div>
@@ -112,12 +111,11 @@ function App() {
           </div>
           {/* Results Section */}
           <AnimatePresence>
-            {isLoading || results ? (
+            {(isLoading || results !== null) && (
               <ResultsDisplay data={results} isLoading={isLoading} />
-            ) : null}
+            )}
           </AnimatePresence>
         </div>
-      </div>
     </main>
   );
 }
@@ -137,33 +135,31 @@ const LoadingSpinner = () => (
 const ResultsDisplay = ({ data, isLoading }) => {
   const scoreColor = data?.credibilityScore > 70 ? '#4ade80' : 
                      data?.credibilityScore > 40 ? '#facc15' : '#f87171';
-  // Removed isBreaking and BREAKING NEWS badge
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white border-2 border-gray-400 rounded-xl p-4 sm:p-8 shadow-lg font-serif relative z-10 min-h-[420px] flex flex-col justify-center"
+      className="bg-white border-2 border-gray-300 rounded-xl p-8 sm:p-12 shadow-lg font-serif relative z-10 min-h-[520px] flex flex-col justify-center items-center"
     >
-      <div className="w-full flex flex-col items-center justify-center min-h-[420px]">
-        {isLoading ? (
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center min-h-[400px] w-full">
           <LoadingSpinner />
-        ) : (
-          <>
-            <div className="results-columns mb-8">
-              <ScoreCircle score={data.credibilityScore} color={scoreColor} />
-              <div className="md:col-span-2 space-y-6">
-                <AnalysisMetrics 
-                  reliability={data.analysis.source.reliability}
-                  tone={data.analysis.sentiment.tone}
-                />
-                <KeywordList keywords={data.analysis.extractedKeywords} />
-              </div>
+        </div>
+      ) : data ? (
+        <>
+          <div className="results-columns mb-10 space-y-10 w-full">
+            <ScoreCircle score={data.credibilityScore} color={scoreColor} />
+            <div className="md:col-span-2 space-y-10">
+              <AnalysisMetrics 
+                reliability={data.analysis.source.reliability}
+                tone={data.analysis.sentiment.tone}
+              />
+              <KeywordList keywords={data.analysis.extractedKeywords} />
             </div>
-            <CorroborationList facts={data.supportingFacts} />
-          </>
-        )}
-      </div>
+          </div>
+          <CorroborationList facts={data.supportingFacts} />
+        </>
+      ) : null}
     </motion.div>
   );
 };
@@ -187,7 +183,7 @@ const ScoreCircle = ({ score, color }) => {
   const circumference = 2 * Math.PI * 45;
   const progress = displayScore / 100;
   return (
-    <div className="relative h-40 w-40 mx-auto">
+    <div className="relative h-56 w-56 mx-auto flex flex-col items-center justify-center">
       <svg className="transform -rotate-90" viewBox="0 0 100 100">
         <circle cx="50" cy="50" r="45" fill="none" stroke="#374151" strokeWidth="10"/>
         <motion.circle
@@ -205,16 +201,19 @@ const ScoreCircle = ({ score, color }) => {
           transition={{ duration: 1.2, ease: "easeOut" }}
         />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-4xl font-bold" style={{ color }}>{displayScore}</span>
-        <span className="text-xl" style={{ color }}>%</span>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div className="flex items-end justify-center">
+          <span className="text-6xl font-extrabold drop-shadow-md" style={{ color }}>{displayScore}</span>
+          <span className="text-2xl font-bold mb-1 ml-1" style={{ color }}>%</span>
+        </div>
+        <span className="text-base font-semibold text-gray-700 mt-1 tracking-wide" style={{textShadow:'0 1px 4px rgba(0,0,0,0.08)'}}>Credibility</span>
       </div>
     </div>
   );
 };
 
 const AnalysisMetrics = ({ reliability, tone }) => (
-  <div className="grid grid-cols-2 gap-4 bg-gray-100 rounded-lg p-4 border border-gray-300">
+  <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
     <div className="text-center">
       <p className="text-sm text-gray-500">Source Grade</p>
       <p className="text-lg font-bold text-blue-900 font-serif">{reliability}</p>
@@ -262,7 +261,7 @@ const CorroborationList = ({ facts }) => (
           initial="hidden"
           animate="visible"
           transition={{ duration: 0.5, delay: 0.13 * index }}
-          className="bg-white border border-gray-300 p-4 rounded-lg mb-4 shadow-sm font-serif text-left hover:shadow-md transition card-hover"
+          className="bg-gray-50 p-4 rounded-lg mb-4 font-serif text-left card-hover"
         >
           <a href={fact.url} target="_blank" rel="noopener noreferrer">
             <h4 className="font-bold text-blue-800 text-lg mb-1 font-serif hover:underline">{fact.title}</h4>
