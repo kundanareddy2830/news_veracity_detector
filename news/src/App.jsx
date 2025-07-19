@@ -18,13 +18,15 @@ const goldStandardResponse = {
 };
 
 function App() {
+  const [inputMode, setInputMode] = useState('url'); // 'url' or 'text'
   const [urlInput, setUrlInput] = useState('');
+  const [textInput, setTextInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState(null);
   // Newspaper theme: use serif font, off-white bg, black text
 
   const handleAnalyze = () => {
-    if (!urlInput) return;
+    if ((inputMode === 'url' && !urlInput) || (inputMode === 'text' && !textInput)) return;
     setIsLoading(true);
     setResults(null);
     setTimeout(() => {
@@ -53,40 +55,61 @@ function App() {
             <div className="newspaper-edition">Published: {today} | Edition No. 1</div>
             <p className="italic text-lg text-gray-700 mt-1 font-serif">Your trusted source for news analysis</p>
           </div>
-          {/* Header */}
-          <motion.header 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-10 relative z-10"
-          >
-            <h2 className="section-heading mb-2">News Veracity Detector</h2>
-            <p className="text-gray-600 mt-2 font-serif">
-              Your AI co-pilot for navigating the complex world of online news
-            </p>
-          </motion.header>
-          {/* Input Section */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-10 relative z-10"
-          >
-            <div className="flex gap-4">
-              <input
-                type="url"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                placeholder="Paste a news article URL..."
-                className="input-field border border-gray-400 bg-[#f5f5f5] text-black font-serif"
-              />
+          {/* Input Mode Toggle */}
+          <div className="flex flex-col items-center gap-2 mb-6 mt-4">
+            <span className="font-semibold text-gray-700">Analyze Article From:</span>
+            <div className="flex gap-2">
               <button
-                onClick={handleAnalyze}
-                disabled={isLoading || !urlInput}
-                className="button-primary bg-black text-white font-serif border border-gray-700 hover:bg-gray-800"
+                className={`px-4 py-2 rounded-t-lg border-b-2 font-semibold transition-colors duration-150 ${inputMode === 'url' ? 'border-black bg-gray-100' : 'border-transparent bg-gray-200 text-gray-500'}`}
+                onClick={() => setInputMode('url')}
               >
-                {isLoading ? 'Analyzing...' : 'Analyze'}
+                URL
+              </button>
+              <button
+                className={`px-4 py-2 rounded-t-lg border-b-2 font-semibold transition-colors duration-150 ${inputMode === 'text' ? 'border-black bg-gray-100' : 'border-transparent bg-gray-200 text-gray-500'}`}
+                onClick={() => setInputMode('text')}
+              >
+                Text
               </button>
             </div>
-          </motion.div>
+          </div>
+          {/* Input Section */}
+          <div className="mb-10">
+            {inputMode === 'url' ? (
+              <div className="flex gap-4">
+                <input
+                  type="url"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  placeholder="Paste a news article URL..."
+                  className="input-field border border-gray-400 bg-[#f5f5f5] text-black font-serif flex-1"
+                />
+                <button
+                  onClick={handleAnalyze}
+                  disabled={isLoading || !urlInput}
+                  className="button-primary bg-black text-white font-serif border border-gray-700 hover:bg-gray-800"
+                >
+                  {isLoading ? 'Analyzing...' : 'Analyze'}
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <textarea
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  placeholder="Paste or type news article text..."
+                  className="input-field border border-gray-400 bg-[#f5f5f5] text-black font-serif min-h-[100px] resize-vertical"
+                />
+                <button
+                  onClick={handleAnalyze}
+                  disabled={isLoading || !textInput}
+                  className="self-end button-primary bg-black text-white font-serif border border-gray-700 hover:bg-gray-800"
+                >
+                  {isLoading ? 'Analyzing...' : 'Analyze'}
+                </button>
+              </div>
+            )}
+          </div>
           {/* Results Section */}
           <AnimatePresence>
             {isLoading || results ? (
