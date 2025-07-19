@@ -112,7 +112,25 @@ function App() {
           {/* Results Section */}
           <AnimatePresence>
             {(isLoading || results !== null) && (
-              <ResultsDisplay data={results} isLoading={isLoading} />
+              <div className="w-full flex flex-col items-center justify-center min-h-[520px]">
+                {isLoading ? (
+                  <LoadingSpinner />
+                ) : results ? (
+                  <>
+                    <div className="results-columns mb-10 space-y-10 w-full">
+                      <ScoreCircle score={results.credibilityScore} color={results.credibilityScore > 70 ? '#4ade80' : results.credibilityScore > 40 ? '#facc15' : '#f87171'} />
+                      <div className="md:col-span-2 space-y-10">
+                        <AnalysisMetrics 
+                          reliability={results.analysis.source.reliability}
+                          tone={results.analysis.sentiment.tone}
+                        />
+                        <KeywordList keywords={results.analysis.extractedKeywords} />
+                      </div>
+                    </div>
+                    <CorroborationList facts={results.supportingFacts} />
+                  </>
+                ) : null}
+              </div>
             )}
           </AnimatePresence>
         </div>
@@ -131,38 +149,6 @@ const LoadingSpinner = () => (
     <p className="mt-4 text-gray-400">Analyzing article...</p>
   </motion.div>
 );
-
-const ResultsDisplay = ({ data, isLoading }) => {
-  const scoreColor = data?.credibilityScore > 70 ? '#4ade80' : 
-                     data?.credibilityScore > 40 ? '#facc15' : '#f87171';
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white border-2 border-gray-300 rounded-xl p-8 sm:p-12 shadow-lg font-serif relative z-10 min-h-[520px] flex flex-col justify-center items-center"
-    >
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center min-h-[400px] w-full">
-          <LoadingSpinner />
-        </div>
-      ) : data ? (
-        <>
-          <div className="results-columns mb-10 space-y-10 w-full">
-            <ScoreCircle score={data.credibilityScore} color={scoreColor} />
-            <div className="md:col-span-2 space-y-10">
-              <AnalysisMetrics 
-                reliability={data.analysis.source.reliability}
-                tone={data.analysis.sentiment.tone}
-              />
-              <KeywordList keywords={data.analysis.extractedKeywords} />
-            </div>
-          </div>
-          <CorroborationList facts={data.supportingFacts} />
-        </>
-      ) : null}
-    </motion.div>
-  );
-};
 
 const ScoreCircle = ({ score, color }) => {
   // Animate the score number
