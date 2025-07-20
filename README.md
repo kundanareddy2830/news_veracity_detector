@@ -51,7 +51,7 @@ graph TD;
 - **httpx** (Async HTTP requests)
 - **dotenv** (Environment variable management)
 - **pydantic** (Data validation)
-- **Custom Web Crawling & LLM Orchestration**
+- **Crawl4ai**(extraction)
 - **OpenAI, Together AI, Google Fact Check API**
 
 ### Frontend
