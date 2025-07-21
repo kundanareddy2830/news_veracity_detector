@@ -64,14 +64,35 @@ graph TD;
 
 ## Backend Details
 
-- **API Server:** Exposes endpoints for news analysis via FastAPI.
-- **Analysis Pipeline:**
-  1. **Ingestion:** Crawls and cleans article content (from URL or raw text).
-  2. **Source Tiering:** Assigns a credibility tier to the publisher based on domain.
-  3. **Deconstruction:** Uses LLMs to extract factual claims and analyze bias.
-  4. **Evidence Gathering:** Fact-checks claims using Google Fact Check API and searches for corroboration in trusted sources.
-  5. **Synthesis & Scoring:** Synthesizes evidence, assigns verdicts, and computes a final credibility score.
-- **Asynchronous Processing:** Handles long-running analysis in the background, allowing for scalable, responsive API usage.
+The backend is a robust, asynchronous FastAPI server that orchestrates a multi-phase pipeline for news analysis. It leverages state-of-the-art language models and fact-checking APIs to provide a transparent, evidence-based credibility score for news articles.
+
+**Pipeline Phases:**
+1. **Ingestion:**
+   - Crawls and cleans article content from a URL or accepts raw text input.
+   - Uses advanced web scraping strategies (via [Crawl4ai](https://github.com/crawl4ai/crawl4ai)) to extract the main article body.
+   - Assigns a credibility tier to the publisher based on domain (e.g., Reuters = Tier 1, Infowars = Tier 5, etc.).
+2. **Deconstruction:**
+   - Utilizes a large language model (Meta Llama 3 via Together AI) to extract up to 7 significant factual claims and generate a bias report.
+   - Outputs a structured JSON object with a bias summary and list of claims.
+3. **Evidence Gathering:**
+   - For each claim, queries the Google Fact Check API for existing fact-checks.
+   - Performs targeted Google searches (restricted to trusted domains) and scrapes top results for corroborating evidence.
+   - All evidence is collected asynchronously for efficiency.
+4. **Synthesis & Scoring:**
+   - Uses OpenAI GPT (gpt-3.5-turbo or gpt-4o) to synthesize the evidence for each claim, assign a verdict (e.g., "Well-Supported", "Disputed"), and provide a rationale.
+   - Computes a final credibility score based on source tier, bias, and claim-level evidence.
+
+**Models & APIs Used:**
+- **Meta Llama 3 (Together AI):** Claim extraction & bias analysis
+- **OpenAI GPT (gpt-3.5-turbo / gpt-4o):** Evidence synthesis & verdict assignment
+- **Google Fact Check API:** Automated fact-checking
+
+**Async Architecture:**
+- All major steps are performed asynchronously for scalability and responsiveness.
+- Supports concurrent evidence gathering and claim analysis.
+
+**Example Output:**
+- Final report includes: credibility score, score breakdown, publisher tier, bias report, and claim-by-claim verdicts with evidence.
 
 ---
 
@@ -92,22 +113,20 @@ graph TD;
 
 ## Workflow
 
-1. **User Submission:**
-   - User enters a news article URL or pastes raw text in the frontend.
-2. **API Request:**
-   - Frontend sends a POST request to the backend `/analyze` endpoint.
-3. **Content Ingestion:**
-   - Backend crawls and cleans the article, determines publisher tier.
-4. **Claim Extraction & Bias Analysis:**
-   - LLM extracts factual claims and analyzes bias in the article.
-5. **Fact-Checking & Corroboration:**
-   - Each claim is checked against fact-checking databases and corroborated with trusted sources.
-6. **Synthesis & Scoring:**
-   - LLM synthesizes evidence, assigns verdicts, and computes a final credibility score.
-7. **Results Delivery:**
-   - Backend returns a detailed report to the frontend.
-8. **User Review:**
-   - Frontend displays the results in a clear, interactive format.
+```mermaid
+graph TD;
+  User["User"]-->|"Submits Article (URL/Text)"|Frontend["Frontend (React)"];
+  Frontend-->|"POST /analyze"|Backend["Backend (FastAPI)"];
+  Backend-->|"Phase 1: Ingestion"|Ingestion["Ingestion (Crawl4ai)"];
+  Ingestion-->|"Cleaned Content, Source Tier"|Deconstruction["Deconstruction (LLM)"];
+  Deconstruction-->|"Claims, Bias Report"|Evidence["Evidence Gathering (Fact Check API, Google Search)"];
+  Evidence-->|"Fact-Checks, Corroboration"|Synthesis["Synthesis & Scoring (OpenAI GPT)"];
+  Synthesis-->|"Final Report"|Frontend;
+  Frontend-->|"Displays Results"|User;
+  Evidence-->|"Fact Check API, Google Search"|External["External Services"];
+  Deconstruction-->|"Together AI (Llama 3)"|External;
+  Synthesis-->|"OpenAI GPT"|External;
+```
 
 ---
 
